@@ -1,8 +1,9 @@
 use crate::Crud;
-use diesel::{dsl::*, result::Error, *};
-use lemmy_db_schema::source::activity::*;
+use diesel::{dsl::*, result::Error, sql_types::Text, *};
+use lemmy_db_schema::{schema::activity, source::activity::*, Url};
 use log::debug;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::{
   fmt::Debug,
   io::{Error as IoError, ErrorKind},
@@ -47,7 +48,20 @@ pub trait Activity_ {
   ) -> Result<Activity, IoError>
   where
     T: Serialize + Debug;
+
   fn read_from_apub_id(conn: &PgConnection, object_id: &str) -> Result<Activity, Error>;
+
+  fn read_community_outbox(
+    conn: &PgConnection,
+    community_actor_id: &Url,
+  ) -> Result<Vec<Value>, Error>;
+}
+
+#[derive(QueryableByName, Deserialize)]
+#[table_name = "activity"]
+struct JsonResult {
+  #[column_name = "data"]
+  data: Value,
 }
 
 impl Activity_ for Activity {
@@ -82,6 +96,22 @@ impl Activity_ for Activity {
   fn read_from_apub_id(conn: &PgConnection, object_id: &str) -> Result<Activity, Error> {
     use lemmy_db_schema::schema::activity::dsl::*;
     activity.filter(ap_id.eq(object_id)).first::<Self>(conn)
+  }
+
+  fn read_community_outbox(
+    conn: &PgConnection,
+    community_actor_id: &Url,
+  ) -> Result<Vec<Value>, Error> {
+    let res: Vec<JsonResult> = sql_query(
+      r#"SELECT activity.data FROM activity
+        WHERE activity.data ->> 'type' = 'Create'
+        AND activity.data -> 'object' ->> 'type' = 'Page'
+        AND activity.data -> 'object' ->> 'to' =
+        LIMIT 20;"#,
+    )
+    .bind::<Text, _>(community_actor_id)
+    .get_results(conn)?;
+    Ok(res.iter().map(|i| i.data.to_owned()).collect())
   }
 }
 

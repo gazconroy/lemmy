@@ -1,8 +1,18 @@
 use crate::schema::activity;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::fmt::Debug;
+use std::{collections::HashMap, fmt::Debug};
 
-#[derive(Queryable, Identifiable, PartialEq, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ActivityData {
+  #[serde(rename = "type")]
+  pub type_: String,
+  // this holds all the fields which are not explicitly listed above, so they can be deserialized
+  #[serde(flatten)]
+  extra: HashMap<String, Value>,
+}
+
+#[derive(Queryable, Identifiable, Debug)]
 #[table_name = "activity"]
 pub struct Activity {
   pub id: i32,
