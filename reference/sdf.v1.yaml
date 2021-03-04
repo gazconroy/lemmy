@@ -1,0 +1,490 @@
+openapi: 3.0.0
+info:
+  title: sdf
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  '/users/{userId}':
+    parameters:
+      - schema:
+          type: integer
+        name: userId
+        in: path
+        required: true
+        description: Id of an existing user.
+    get:
+      summary: Get User Info by User ID
+      tags: []
+      responses:
+        '200':
+          description: User Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Get User Alice Smith:
+                  value:
+                    id: 142
+                    firstName: Alice
+                    lastName: Smith
+                    email: alice.smith@gmail.com
+                    dateOfBirth: '1997-10-31'
+                    emailVerified: true
+                    signUpDate: '2019-08-24'
+        '404':
+          description: User Not Found
+      operationId: get-users-userId
+      description: Retrieve the information of the user with the matching user ID.
+    patch:
+      summary: Update User Information
+      operationId: patch-users-userId
+      responses:
+        '200':
+          description: User Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Updated User Rebecca Baker:
+                  value:
+                    id: 13
+                    firstName: Rebecca
+                    lastName: Baker
+                    email: rebecca@gmail.com
+                    dateOfBirth: '1985-10-02'
+                    emailVerified: false
+                    createDate: '2019-08-24'
+        '404':
+          description: User Not Found
+        '409':
+          description: Email Already Taken
+      description: Update the infromation of an existing user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                  description: 'If a new email is given, the user''s email verified property will be set to false.'
+                dateOfBirth:
+                  type: string
+            examples:
+              Update First Name:
+                value:
+                  firstName: Rebecca
+              Update Email:
+                value:
+                  email: rebecca@gmail.com
+              Update Last Name & Date of Birth:
+                value:
+                  lastName: Baker
+                  dateOfBirth: '1985-10-02'
+        description: Patch user properties to update.
+  /user:
+    post:
+      summary: Create New User
+      operationId: post-user
+      responses:
+        '200':
+          description: User Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                New User Bob Fellow:
+                  value:
+                    id: 12
+                    firstName: Bob
+                    lastName: Fellow
+                    email: bob.fellow@gmail.com
+                    dateOfBirth: '1996-08-24'
+                    emailVerified: false
+                    createDate: '2020-11-18'
+        '400':
+          description: Missing Required Information
+        '409':
+          description: Email Already Taken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                dateOfBirth:
+                  type: string
+                  format: date
+              required:
+                - firstName
+                - lastName
+                - email
+                - dateOfBirth
+            examples:
+              Create User Bob Fellow:
+                value:
+                  firstName: Bob
+                  lastName: Fellow
+                  email: bob.fellow@gmail.com
+                  dateOfBirth: '1996-08-24'
+        description: Post the necessary fields for the API to create a new user.
+      description: Create a new user.
+components:
+  schemas:
+    User:
+      title: User
+      type: object
+      description: ''
+      x-examples:
+        Alice Smith:
+          id: 142
+          firstName: Alice
+          lastName: Smith
+          email: alice.smith@gmail.com
+          dateOfBirth: '1997-10-31'
+          emailVerified: true
+          signUpDate: '2019-08-24'
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the given user.
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        dateOfBirth:
+          type: string
+          format: date
+          example: '1997-10-31'
+        emailVerified:
+          type: boolean
+          description: Set to true if the user's email has been verified.
+        createDate:
+          type: string
+          format: date
+          description: The date that the user was created.
+      required:
+        - id
+        - firstName
+        - lastName
+        - email
+        - emailVerified
+    listCommentsReportResponse:
+      description: ''
+      type: object
+      properties:
+        op:
+          type: string
+          minLength: 1
+        data:
+          type: object
+          properties:
+            comments:
+              type: array
+              uniqueItems: true
+              minItems: 1
+              items:
+                required: []
+                properties:
+                  comment_report:
+                    type: object
+                    properties:
+                      resolver_id: {}
+                      published:
+                        type: string
+                        minLength: 1
+                      comment_id:
+                        type: number
+                      creator_id:
+                        type: number
+                      reason:
+                        type: string
+                        minLength: 1
+                      original_comment_text:
+                        type: string
+                        minLength: 1
+                      id:
+                        type: number
+                      resolved:
+                        type: boolean
+                      updated: {}
+                    required:
+                      - published
+                      - comment_id
+                      - creator_id
+                      - reason
+                      - original_comment_text
+                      - id
+                      - resolved
+                  resolver: {}
+                  community:
+                    type: object
+                    properties:
+                      icon: {}
+                      removed:
+                        type: boolean
+                      name:
+                        type: string
+                        minLength: 1
+                      nsfw:
+                        type: boolean
+                      title:
+                        type: string
+                        minLength: 1
+                      banner: {}
+                      updated:
+                        type: string
+                        minLength: 1
+                      category_id:
+                        type: number
+                      description:
+                        type: string
+                        minLength: 1
+                      local:
+                        type: boolean
+                      creator_id:
+                        type: number
+                      id:
+                        type: number
+                      actor_id:
+                        type: string
+                        minLength: 1
+                      published:
+                        type: string
+                        minLength: 1
+                      deleted:
+                        type: boolean
+                    required:
+                      - removed
+                      - name
+                      - nsfw
+                      - title
+                      - updated
+                      - category_id
+                      - description
+                      - local
+                      - creator_id
+                      - id
+                      - actor_id
+                      - published
+                      - deleted
+                  creator:
+                    type: object
+                    properties:
+                      avatar: {}
+                      matrix_user_id:
+                        type: string
+                        minLength: 1
+                      name:
+                        type: string
+                        minLength: 1
+                      bio:
+                        type: string
+                        minLength: 1
+                      banner: {}
+                      shared_inbox_url:
+                        type: string
+                        minLength: 1
+                      updated:
+                        type: string
+                        minLength: 1
+                      preferred_username:
+                        type: string
+                        minLength: 1
+                      banned:
+                        type: boolean
+                      local:
+                        type: boolean
+                      admin:
+                        type: boolean
+                      id:
+                        type: number
+                      actor_id:
+                        type: string
+                        minLength: 1
+                      published:
+                        type: string
+                        minLength: 1
+                      deleted:
+                        type: boolean
+                      inbox_url:
+                        type: string
+                        minLength: 1
+                    required:
+                      - matrix_user_id
+                      - name
+                      - bio
+                      - shared_inbox_url
+                      - updated
+                      - preferred_username
+                      - banned
+                      - local
+                      - admin
+                      - id
+                      - actor_id
+                      - published
+                      - deleted
+                      - inbox_url
+                  post:
+                    type: object
+                    properties:
+                      removed:
+                        type: boolean
+                      name:
+                        type: string
+                        minLength: 1
+                      nsfw:
+                        type: boolean
+                      embed_description: {}
+                      embed_html: {}
+                      updated: {}
+                      community_id:
+                        type: number
+                      embed_title: {}
+                      body:
+                        type: string
+                        minLength: 1
+                      thumbnail_url: {}
+                      local:
+                        type: boolean
+                      creator_id:
+                        type: number
+                      locked:
+                        type: boolean
+                      id:
+                        type: number
+                      url: {}
+                      stickied:
+                        type: boolean
+                      published:
+                        type: string
+                        minLength: 1
+                      deleted:
+                        type: boolean
+                      ap_id:
+                        type: string
+                        minLength: 1
+                    required:
+                      - removed
+                      - name
+                      - nsfw
+                      - community_id
+                      - body
+                      - local
+                      - creator_id
+                      - locked
+                      - id
+                      - stickied
+                      - published
+                      - deleted
+                      - ap_id
+                  comment_creator:
+                    type: object
+                    properties:
+                      avatar: {}
+                      matrix_user_id:
+                        type: string
+                        minLength: 1
+                      name:
+                        type: string
+                        minLength: 1
+                      bio:
+                        type: string
+                        minLength: 1
+                      banner: {}
+                      updated:
+                        type: string
+                        minLength: 1
+                      preferred_username:
+                        type: string
+                        minLength: 1
+                      banned:
+                        type: boolean
+                      local:
+                        type: boolean
+                      admin:
+                        type: boolean
+                      id:
+                        type: number
+                      actor_id:
+                        type: string
+                        minLength: 1
+                      published:
+                        type: string
+                        minLength: 1
+                      deleted:
+                        type: boolean
+                    required:
+                      - matrix_user_id
+                      - name
+                      - bio
+                      - updated
+                      - preferred_username
+                      - banned
+                      - local
+                      - admin
+                      - id
+                      - actor_id
+                      - published
+                      - deleted
+                  comment:
+                    type: object
+                    properties:
+                      parent_id: {}
+                      read:
+                        type: boolean
+                      deleted:
+                        type: boolean
+                      local:
+                        type: boolean
+                      published:
+                        type: string
+                        minLength: 1
+                      ap_id:
+                        type: string
+                        minLength: 1
+                      creator_id:
+                        type: number
+                      removed:
+                        type: boolean
+                      updated: {}
+                      id:
+                        type: number
+                      post_id:
+                        type: number
+                      content:
+                        type: string
+                        minLength: 1
+                    required:
+                      - read
+                      - deleted
+                      - local
+                      - published
+                      - ap_id
+                      - creator_id
+                      - removed
+                      - id
+                      - post_id
+                      - content
+          required:
+            - comments
+      required:
+        - op
+        - data
